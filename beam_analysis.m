@@ -37,8 +37,7 @@ stress_MPa = sigma / 1e6;
 % Typical yield strength of steel
 sigma_yield = 250; % MPa
 
-
-
+% Plotting
 figure;
 hold on
 plot(x, stress_MPa, 'LineWidth', 2);
@@ -66,6 +65,44 @@ ylim([0 max(stress_MPa) * 1.12]);
 
 hold off
 
+% V2: Deflection Analysis (Simply Supported Beam with Center Load) 
 
+EI = E * I; % Flexural rigidity (beam stiffness)
 
+v = zeros(1,n); % Deflection at each position along the beam (Meters)
 
+for i = 1:n
+    if x(i) <= L/2
+        v(i) = (P * x(i) * (3 * L^2 - 4 * x(i)^2)) / (48 * EI);
+    else
+        v(i) = (P * (L - x(i)) * (3 * L^2 - 4 * (L - x(i))^2)) / (48 * EI);
+    end
+end
+
+v = -v; % To make downward deflection negative
+v_mm = abs(v) * 1000; % Convert Deflection to mm
+
+figure;
+hold on;
+plot(x, v_mm, 'LineWidth', 2);
+title('Deflection Profile of a Simply Supported Beam Under Center Load');
+xlabel('Position Along Beam (m)');
+ylabel('Deflection Magnitude (mm)');
+
+yline(0, '--k'); % Reference line to make deflection easier to read
+
+% Find maximum deflection point
+[v_max, idx_max] = max(v_mm);
+x_max = x(idx_max);
+
+plot (x_max, v_max, 'ko', 'MarkerFaceColor', 'k');
+text(x_max, v_max, sprintf(' Peak = %.1f mm', v_max), 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'center');
+
+% Resize frame of figure
+xlim([0 L]);
+ylim([0 max(v_mm) * 1.1]);
+
+legend('Deflection', 'Peak Deflection', 'Location', 'best');
+
+grid on;
+hold off;
